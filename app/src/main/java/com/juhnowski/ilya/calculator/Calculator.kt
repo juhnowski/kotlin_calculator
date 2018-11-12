@@ -2,6 +2,7 @@ package com.juhnowski.ilya.calculator
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -10,12 +11,14 @@ import kotlinx.android.synthetic.main.activity_calculator.*
 
 class Calculator : AppCompatActivity() {
 
+    val TAG = "Calculator"
 
     private val displayOperation by lazy(LazyThreadSafetyMode.NONE) {findViewById<TextView>(R.id.operation)}
 
-    private var operand1: Double? = null
-    private var operand2: Double = 0.0
-    private var pendingOperation = "="
+    private var arg1: Double? = null
+    private var arg2: Double = 0.0
+    private var result: Double? = null
+    private var op = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,11 +64,7 @@ class Calculator : AppCompatActivity() {
         val opListener = View.OnClickListener{ v ->
             val op = (v as Button).text.toString()
             val value = editText.text.toString()
-            if (value.isNotEmpty()){
-                performOperation(value, op)
-            }
-            pendingOperation = op;
-            operation.text = pendingOperation
+            performOperation(value, op)
         }
 
         button_div.setOnClickListener (opListener)
@@ -76,28 +75,33 @@ class Calculator : AppCompatActivity() {
     }
 
     private fun performOperation(value: String, oper: String){
-        if(operand1 == null){
-            operand1 = value.toDouble()
-        } else {
-            operand2 = value.toDouble()
 
-            if(pendingOperation == "="){
-                pendingOperation = oper
-            }
-
-            when (pendingOperation){
-                "=" -> operand1 = operand2
-                "/" -> if (operand2 == 0.0) {
-                    operand1 = Double.NaN
-                } else {
-                    operand1 = operand1!! / operand2
+            if(oper == "="){
+                Log.d(TAG, "oper is $oper for op=$op")
+                arg2 =  value.toDouble()
+                Log.d(TAG, "arg1 is $arg1 and arg2 is $arg2")
+                when(op) {
+                    "/" -> if (arg2 == 0.0) {
+                        result = Double.NaN
+                    } else {
+                        result = arg1!! / arg2!!
+                    }
+                    "*" -> result = arg1!! * arg2!!
+                    "-" -> result = arg1!! - arg2!!
+                    "+" -> result = arg1!! + arg2!!
                 }
-                "*" -> operand1 = operand1!! * operand2
-                "-" -> operand1 = operand1!! - operand2
-                "+" -> operand1 = operand1!! + operand2
+
+                Log.d(TAG, "result of $arg1 $op $arg2 = $result ")
+                editText.setText(result.toString())
+                op=""
+            } else {
+                arg1 = value.toDouble()
+                op = oper
+                Log.d(TAG, "operation is $op arg1=$arg1")
+                editText.setText("")
             }
-        }
-        editText.setText(operand1.toString())
+
+
     }
 
 
